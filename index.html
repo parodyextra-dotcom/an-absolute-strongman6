@@ -57,7 +57,17 @@
       from { opacity: 0; transform: translateY(-10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(-30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
     .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+    .animate-slide-left { animation: slideInLeft 0.25s ease-out; }
+    .animate-slide-right { animation: slideInRight 0.25s ease-out; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
@@ -4799,6 +4809,59 @@
     // Start clock update interval
     setInterval(updateDateTime, 1000);
 
+    // Swipe navigation
+    var tabOrder = ['home', 'history', 'stats', 'goal', 'invest', 'exchange'];
+    var touchStartX = 0;
+    var touchStartY = 0;
+    var touchEndX = 0;
+    var touchEndY = 0;
+    var minSwipeDistance = 50;
+    var swipeDirection = null;
+
+    function handleSwipe() {
+      var diffX = touchStartX - touchEndX;
+      var diffY = touchStartY - touchEndY;
+      
+      // 수평 스와이프가 수직보다 클 때만 처리 (스크롤과 구분)
+      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > minSwipeDistance) {
+        var currentIndex = tabOrder.indexOf(state.activeTab);
+        if (currentIndex === -1) return;
+        
+        if (diffX > 0) {
+          // 왼쪽으로 스와이프 → 다음 탭
+          var nextIndex = (currentIndex + 1) % tabOrder.length;
+          swipeDirection = 'left';
+          setActiveTab(tabOrder[nextIndex]);
+        } else {
+          // 오른쪽으로 스와이프 → 이전 탭
+          var prevIndex = (currentIndex - 1 + tabOrder.length) % tabOrder.length;
+          swipeDirection = 'right';
+          setActiveTab(tabOrder[prevIndex]);
+        }
+      }
+    }
+
+    document.addEventListener('touchstart', function(e) {
+      // 모달이 열려있으면 스와이프 무시
+      if (state.showAddTransaction || state.showCompoundCalc || state.showSettings || 
+          state.showAddInvestment || state.showAddDividend || state.showAddJournal || 
+          state.showRankInfo || state.showIframeModal) return;
+      
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    document.addEventListener('touchend', function(e) {
+      // 모달이 열려있으면 스와이프 무시
+      if (state.showAddTransaction || state.showCompoundCalc || state.showSettings || 
+          state.showAddInvestment || state.showAddDividend || state.showAddJournal || 
+          state.showRankInfo || state.showIframeModal) return;
+      
+      touchEndX = e.changedTouches[0].screenX;
+      touchEndY = e.changedTouches[0].screenY;
+      handleSwipe();
+    }, { passive: true });
+
     // Main render function
     function render() {
       var app = document.getElementById('app');
@@ -4831,7 +4894,12 @@
       if (state.showRankInfo) modals += renderRankInfoModal();
       if (state.showIframeModal) modals += renderIframeModal();
 
-      app.innerHTML = renderHeader() + '<div class="pb-4">' + content + '</div>' + renderNavbar() + modals;
+      var animClass = '';
+      if (swipeDirection === 'left') animClass = ' animate-slide-left';
+      else if (swipeDirection === 'right') animClass = ' animate-slide-right';
+      swipeDirection = null;
+
+      app.innerHTML = renderHeader() + '<div class="pb-4' + animClass + '">' + content + '</div>' + renderNavbar() + modals;
 
       lucide.createIcons();
 
