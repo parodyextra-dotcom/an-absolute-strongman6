@@ -796,7 +796,8 @@
       return '<div class="p-4 space-y-4">' +
         '<div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-xl shadow-lg">' +
           '<div class="text-sm opacity-90 mb-1">총 잔액</div>' +
-          '<div class="text-3xl font-bold mb-3">' + formatNumber(totalBalance) + '원</div>' +
+          '<div class="text-3xl font-bold mb-1">' + formatNumber(totalBalance) + '원</div>' +
+          '<div id="current-datetime" class="text-xs opacity-75 mb-3"></div>' +
           (state.undoStack.length > 0 ? 
             '<button onclick="handleUndo()" class="bg-white text-blue-600 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-blue-50 transition">' +
               '<i data-lucide="undo-2" class="w-4 h-4"></i> 실행 취소' +
@@ -4777,6 +4778,27 @@
       render();
     }
 
+    // Update date/time display function
+    function updateDateTime() {
+      var dateTimeEl = document.getElementById('current-datetime');
+      if (!dateTimeEl) return;
+      
+      var now = new Date();
+      var dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+      var year = now.getFullYear();
+      var month = String(now.getMonth() + 1).padStart(2, '0');
+      var day = String(now.getDate()).padStart(2, '0');
+      var dayName = dayNames[now.getDay()];
+      var hours = String(now.getHours()).padStart(2, '0');
+      var minutes = String(now.getMinutes()).padStart(2, '0');
+      var seconds = String(now.getSeconds()).padStart(2, '0');
+      
+      dateTimeEl.textContent = year + '년 ' + month + '월 ' + day + '일 ' + dayName + ' ' + hours + ':' + minutes + ':' + seconds;
+    }
+
+    // Start clock update interval
+    setInterval(updateDateTime, 1000);
+
     // Main render function
     function render() {
       var app = document.getElementById('app');
@@ -4812,6 +4834,9 @@
       app.innerHTML = renderHeader() + '<div class="pb-4">' + content + '</div>' + renderNavbar() + modals;
 
       lucide.createIcons();
+
+      // Update current date/time display
+      updateDateTime();
 
       // Post-render updates
       setTimeout(function() {
