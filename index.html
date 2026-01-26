@@ -529,6 +529,7 @@
         loans: state.loans,
         events: state.events,
         categories: state.categories,
+        fixedExpenses: state.fixedExpenses,
         exchangeData: {
           usdPhases: state.usdPhases,
           jpyPhases: state.jpyPhases,
@@ -602,6 +603,7 @@
             state.investmentJournals = data.investmentJournals || [];
             state.loans = data.loans || [];
             state.events = data.events || [];
+            state.fixedExpenses = data.fixedExpenses || [];
             if (data.categories) state.categories = data.categories;
             if (data.exchangeData) {
               state.usdPhases = data.exchangeData.usdPhases || [];
@@ -4739,6 +4741,7 @@
         state.dividends = [];
         state.investmentJournals = [];
         state.loans = [];
+        state.fixedExpenses = [];
         state.goals = { year7: '', year5: '', year3: '', thisYear: '' };
         state.undoStack = [];
         state.usdPhases = [];
